@@ -5,28 +5,45 @@ from PIL import Image
 import gradio as gr
 
 def create_mask(mask):
+    # assume the sky is in the upper part by default
+
+    # Iterate through the columns of the mask to process each vertical slice
     for column_index in range(mask.shape[1]):
         column_values = mask[:, column_index]
+        # Apply median filtering to the column
         after_median = medfilt(column_values, 19)
         try:
+            # Find the index of the first zero and one in the filtered column
             first_zero_index = np.where(after_median == 0)[0][0]
             first_one_index = np.where(after_median == 1)[0][0]
+            # Check if the distance between the first zero and first one is greater than 20
             if first_zero_index > 20:
+                # Update the mask to separate the sky from other regions
                 mask[first_one_index:first_zero_index, column_index] = 1
                 mask[first_zero_index:, column_index] = 0
                 mask[:first_one_index, column_index] = 0
         except:
+            # Handle the case where no zero or one was found, continue to the next column
             continue
     return mask
 
 def detect_sky_area(img):
+
     img_gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+    # Apply Gaussian blur to reduce noise
+
     img_gray = cv2.blur(img_gray, (9, 3))
+    # Apply median blur for smoothing
     img_gray = cv2.medianBlur(img_gray, 5)
     lap = cv2.Laplacian(img_gray, cv2.CV_8U)
+
+    # Create a binary mask by thresholding the Laplacian gradient
     gradient_mask = (lap < 6).astype(np.uint8)
+    # Define a morphological kernel for erosion
     kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (9, 3))
+    # Apply morphological erosion to refine the gradient mask
     mask = cv2.morphologyEx(gradient_mask, cv2.MORPH_ERODE, kernel)
+    # Create a mask to separate the sky region from other areas
     mask = create_mask(mask)
     after_img = cv2.bitwise_and(img, img, mask=mask)
     return after_img
