@@ -1,6 +1,6 @@
 # Sky Replacement App
 
-This Sky Replacement Ap is an innovative tool designed to transform images by replacing the sky with a beautiful angelic backdrop. 
+This Sky Replacement App is an innovative tool designed to transform images by replacing the sky with a beautiful angelic backdrop. 
 It uses image processing techniques to identify the sky in your picture and seamlessly integrate an angel image into the scene. 
 Hosted on HuggingFace Spaces, it offers an easy-to-use interface for users to upload images and instantly see the transformed results.
 
